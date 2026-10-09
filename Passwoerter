@@ -1,0 +1,6 @@
+PostGre Datenbank MeineDatenbank9t7!
+
+CREATE USER helpdesk_app WITH PASSWORD 'password';
+
+CREATE DATABASE mini_helpdesk OWNER helpdesk_app;
+

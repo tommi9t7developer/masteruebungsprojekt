@@ -38,9 +38,9 @@ class TicketService:
         if ticket.status == Status.CLOSED:
             raise ValueError("Ticket ist bereits geschlossen.")
 
-        ticket.status = Status.CLOSED
+        self.repository.update_status(ticket_id, Status.CLOSED)
 
-        return ticket
+        return self.get_ticket(ticket_id)
 
     def delete_ticket(self, ticket_id):
         ticket = self.get_ticket(ticket_id)
