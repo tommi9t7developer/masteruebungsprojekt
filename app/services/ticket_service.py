@@ -1,21 +1,25 @@
 from app.models.ticket import Ticket, Priority, Status
 from app.repositories.ticket_repository import TicketRepository
-
+from app.exceptions import (
+    InvalidTicketError,
+    TicketConflictError,
+    TicketNotFoundError,
+)
 
 class TicketService:
     def __init__(self, repository):
         self.repository = repository
 
     def create_ticket(self, title, description, priority):
-        if not title:
-            raise ValueError("Titel darf nicht leer sein.")
+        if not title or not title.strip():
+            raise InvalidTicketError("Titel darf nicht leer sein.")
 
         if not isinstance(priority, Priority):
-            raise ValueError("Ungültige Priorität.")
+            raise InvalidTicketError("Ungültige Priorität.")
 
         ticket = Ticket(
             None,
-            title,
+            title.strip(),
             description,
             priority
         )
@@ -28,7 +32,7 @@ class TicketService:
         ticket = self.repository.find_by_id(ticket_id)
 
         if ticket is None:
-            raise ValueError("Ticket nicht gefunden.")
+            raise TicketNotFoundError("Ticket nicht gefunden.")
 
         return ticket
 
@@ -36,7 +40,9 @@ class TicketService:
         ticket = self.get_ticket(ticket_id)
 
         if ticket.status == Status.CLOSED:
-            raise ValueError("Ticket ist bereits geschlossen.")
+            raise TicketConflictError(
+                "Ticket ist bereits geschlossen."
+            )
 
         self.repository.update_status(ticket_id, Status.CLOSED)
 
@@ -46,7 +52,9 @@ class TicketService:
         ticket = self.get_ticket(ticket_id)
 
         if ticket.status != Status.CLOSED:
-            raise ValueError("Nur geschlossene Tickets dürfen gelöscht werden.")
+            raise TicketConflictError(
+                "Nur geschlossene Tickets dürfen gelöscht werden."
+            )
 
         self.repository.delete(ticket_id)
 
